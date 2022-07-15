@@ -5,9 +5,16 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(Eigen3_DIR "D:/c/Eigen3/share/eigen3/cmake")
 
+set(OpenCV_DIR "D:/c/OpenCV")
+
 find_package(Eigen3 REQUIRED NO_MODULE)
+
+find_package(OpenCV REQUIRED NO_MODULE)
+
+include_directories(${OpenCV_INCLUDE_DIR})
 
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-add_subdirectory(./housework0)
+add_subdirectory(homework0)
 
+add_subdirectory(homework1)

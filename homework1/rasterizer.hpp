@@ -29,7 +29,7 @@ inline Buffers operator&(Buffers a, Buffers b)
 enum class Primitive
 {
     Line,
-    Triangle
+    Triangle,
 };
 
 /*

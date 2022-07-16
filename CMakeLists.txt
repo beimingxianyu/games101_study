@@ -18,3 +18,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 add_subdirectory(homework0)
 
 add_subdirectory(homework1)
+
+add_executable(test test.cpp)
+
+target_link_libraries(test Eigen3::Eigen)

@@ -129,7 +129,7 @@ void rst::rasterizer::draw_line(Eigen::Vector3f begin, Eigen::Vector3f end)
 
 Eigen::Vector4f to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 {
-    return Eigen::Vector4f(v3.x(), v3.y(), v3.z(), w);
+    return {v3.x(), v3.y(), v3.z(), w};
 }
 
 void rst::rasterizer::draw(rst::pos_buf_id pos_buffer, rst::ind_buf_id ind_buffer, rst::Primitive type)
@@ -155,22 +155,22 @@ void rst::rasterizer::draw(rst::pos_buf_id pos_buffer, rst::ind_buf_id ind_buffe
                 mvp * to_vec4(buf[i[2]], 1.0f)
         };
 
-        for (int j = 0; j < 3; ++j) {
-            v[j] /= v[j].w();
+        for (auto & j : v) {
+            j /= j.w();
+        }
+
+        for (auto & j : v)
+        {
+            j.x() = 0.5*width*(j.x()+1.0);
+            j.y() = 0.5*height*(j.y()+1.0);
+            j.z() = j.z() * f1 + f2;
         }
 
         for (int j = 0; j < 3; ++j)
         {
-            v[j].x() = 0.5*width*(v[j].x()+1.0);
-            v[j].y() = 0.5*height*(v[j].y()+1.0);
-            v[j].z() = v[j].z() * f1 + f2;
-        }
-
-        for (int i = 0; i < 3; ++i)
-        {
 //            t.setVertex(i, v[i].head<3>());
 //            t.setVertex(i, v[i].head<3>());
-            t.setVertex(i, v[i].head<3>());
+            t.setVertex(j, v[j].head<3>());
         }
 
         t.setColor(0, 255.0,  0.0,  0.0);

@@ -69,18 +69,19 @@ namespace rst
         void set_view(const Eigen::Matrix4f& v);
         void set_projection(const Eigen::Matrix4f& p);
 
-        void set_pixel(const Eigen::Vector3f& point, const Eigen::Vector3f& color);
+        void set_pixel(const Eigen::Vector3f& point, const Eigen::Vector3f& color, const int& index);
 
         void clear(Buffers buff);
 
         void draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf_id col_buffer, Primitive type);
 
-        std::vector<Eigen::Vector3f>& frame_buffer() { return frame_buf; }
+        std::vector<Eigen::Vector3f>& frame_buffer();
 
     private:
         void draw_line(Eigen::Vector3f begin, Eigen::Vector3f end);
 
         void rasterize_triangle(const Triangle& t);
+        void MSAA_rasterize_triangle(const Triangle& t);
 
         // VERTEX SHADER -> MVP -> Clipping -> /.W -> VIEWPORT -> DRAWLINE/DRAWTRI -> FRAGSHADER
 
@@ -93,9 +94,9 @@ namespace rst
         std::map<int, std::vector<Eigen::Vector3i>> ind_buf;
         std::map<int, std::vector<Eigen::Vector3f>> col_buf;
 
+        std::vector<std::array<Eigen::Vector3f, 4> > super_frame_buf;
         std::vector<Eigen::Vector3f> frame_buf;
-
-        std::vector<float> depth_buf;
+        std::vector<std::array<float, 4> > super_depth_buf;
         int get_index(int x, int y);
 
         int width, height;

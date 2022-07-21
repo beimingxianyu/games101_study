@@ -55,6 +55,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
 
 int main(int argc, const char** argv)
 {
+    std::iostream::sync_with_stdio(false);
     float angle = 0;
     bool command_line = false;
     std::string filename = "output.png";
@@ -137,7 +138,7 @@ int main(int argc, const char** argv)
         cv::imshow("image", image);
         key = cv::waitKey(10);
 
-//        std::cout << "frame count: " << frame_count++ << '\n';
+        std::cout << "frame count: " << frame_count++ << '\n';
     }
 
     return 0;

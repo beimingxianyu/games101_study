@@ -183,16 +183,29 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
 
 void rst::rasterizer::MSAA_rasterize_triangle(const Triangle& t) {
     auto v = t.toVector4();
-    int top    = std::max(std::max(t.v[0].y(), t.v[1].y()), t.v[2].y()),
-        bottom = std::min(std::min(t.v[0].y(), t.v[1].y()), t.v[2].y()),
-        right  = std::max(std::max(t.v[0].x(), t.v[1].x()), t.v[2].x()),
+    int top    = std::max(std::max(std::max(t.v[0].y(), (float)0), t.v[1].y()), t.v[2].y()),
+        bottom = std::min(std::min(t.v[0].x(), t.v[1].y()), t.v[2].y()),
+        right  = std::max(std::max(std::max(t.v[0].x(), (float)0), t.v[1].x()), t.v[2].x()),
         left   = std::min(std::min(t.v[0].x(), t.v[1].x()), t.v[2].y());
+    if (bottom < 0) {
+        bottom = 0;
+    }
+    if (left < 0) {
+        left = 0;
+    }
+    if (top > height) {
+        top = height;
+    }
+    if (right < width) {
+        right = width;
+    }
     // 偏移量
     std::vector<std::array<float, 2> > offsets = {{0.25, 0.25}, {0.75, 0.25},
                                                   {0.25, 0.75}, {0.75, 0.75}};
     int inside_point;  // 每个像素内有效点的个数
     float point_depth;
     float x, y;
+
     for (float pos_x = left; pos_x <= right; pos_x++) {
         for (float pos_y = bottom; pos_y <= top; pos_y++) {
             for (int i = 0; i < 4; ++i) {
@@ -214,6 +227,7 @@ void rst::rasterizer::MSAA_rasterize_triangle(const Triangle& t) {
             }
         }
     }
+
 }
 
 //void rst::rasterizer::MSAA_rasterize_triangle(const Triangle& t) {

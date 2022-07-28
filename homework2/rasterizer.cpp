@@ -75,7 +75,6 @@ Eigen::Vector4f to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 //}
 static bool insideTriangle(float x, float y, const Vector3f* _v)
 {
-    // TODO : Implement this function to check if the point (x, y) is inside the triangle represented by _v[0], _v[1], _v[2]
     Vector3f Q = {x,y,0};
 
     Vector3f p0p1 = _v[1] - _v[0];
@@ -272,7 +271,7 @@ void rst::rasterizer::MSAA_rasterize_triangle(const Triangle& t) {
 //                //这里有个细节之前没注意，就是buf的取值要用get_index函数
 //                if (depth_buf[get_index(x, y)] > z_interpolated)
 //                {
-//                    // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
+//
 //                    //深度存入缓存
 //                    depth_buf[get_index(x, y)] = z_interpolated;
 //                    Vector3f point = { (float)x,(float)y,z_interpolated };

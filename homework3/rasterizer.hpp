@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 #include <optional>
 #include <algorithm>
 #include "global.hpp"
@@ -44,16 +44,19 @@ namespace rst
      * */
     struct pos_buf_id
     {
+        pos_buf_id(int id) : pos_id(id) {}
         int pos_id = 0;
     };
 
     struct ind_buf_id
     {
+        ind_buf_id(int id) : ind_id(id) {}
         int ind_id = 0;
     };
 
     struct col_buf_id
     {
+        col_buf_id(int id) : col_id(id) {}
         int col_id = 0;
     };
 

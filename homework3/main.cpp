@@ -47,10 +47,30 @@ Eigen::Matrix4f get_model_matrix(float angle)
     return translate * rotation * scale;
 }
 
-Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
+Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
+                                      float zNear, float zFar)
 {
-    // TODO: Use the same projection matrix from the previous assignments
-
+    // Students will implement this function
+    // Create the projection matrix for the given parameters.
+    // Then return it.
+    zNear = -zNear;
+    zFar = -zFar;
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity(), Mtrans = Eigen::Matrix4f::Identity(),
+            Mscale = Eigen::Matrix4f::Identity(), MP20 = Eigen::Matrix4f::Identity();
+    float ForY = eye_fov / 180 * MY_PI;
+    float t(std::abs(zNear) * std::tan(ForY / 2));
+    float r(t * aspect_ratio);
+    Mscale << 1/r, 0, 0, 0,
+            0, 1/t, 0, 0,
+            0, 0, 2/(zNear-zFar), 0,
+            0, 0, 0, 1;
+    Mtrans << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, -(zNear+zFar)/2,
+            0, 0, 0, 1;
+    MP20 << zNear, 0, 0, 0, 0, zNear, 0, 0, 0, 0, zNear + zFar, -1 * zNear * zFar, 0, 0, 1, 0;
+    projection = Mscale * Mtrans * MP20;
+    return projection;
 }
 
 Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
@@ -82,9 +102,8 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 {
     Eigen::Vector3f return_color = {0, 0, 0};
     if (payload.texture)
-    {
-        // TODO: Get the texture value at the texture coordinates of the current fragment
-
+    {   //payload是之前返回的一个结构体，texture是payload的成员，是个类，getcolor是公有函数，接收两个float,u,v坐标
+        return_color = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -107,16 +126,20 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f normal = payload.normal;
 
     Eigen::Vector3f result_color = {0, 0, 0};
-
+    Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
-        // components are. Then, accumulate that result on the *result_color* object.
-
+        Eigen::Vector3f l = (light.position - point).normalized();      // 光
+        Eigen::Vector3f v = (eye_pos - point).normalized();		        // 眼
+        Eigen::Vector3f h = (l + v).normalized();                       // 半程向量
+        double r_2 = (light.position - point).dot(light.position - point);
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity / r_2) * std::max(0.0f, normal.dot(l));    //cwiseProduct()函数允许Matrix直接进行点对点乘法,而不用转换至Array。
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity / r_2) * std::pow(std::max(0.0f, normal.dot(h)), p);
+        result_color += (La + Ld + Ls);
     }
-
     return result_color * 255.f;
 }
+
 
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
 {
@@ -138,13 +161,17 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f normal = payload.normal;
 
     Eigen::Vector3f result_color = {0, 0, 0};
+    Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
-        // components are. Then, accumulate that result on the *result_color* object.
-        
+        Eigen::Vector3f l = (light.position - point).normalized();      // 光
+        Eigen::Vector3f v = (eye_pos - point).normalized();		        // 眼
+        Eigen::Vector3f h = (l + v).normalized();                       // 半程向量
+        double r_2 = (light.position - point).dot(light.position - point);
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity / r_2) * std::max(0.0f, normal.dot(l));    //cwiseProduct()函数允许Matrix直接进行点对点乘法,而不用转换至Array。
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity / r_2) * std::pow(std::max(0.0f, normal.dot(h)), p);
+        result_color += (La + Ld + Ls);
     }
-
     return result_color * 255.f;
 }
 
@@ -182,18 +209,34 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     // Vector ln = (-dU, -dV, 1)
     // Position p = p + kn * n * h(u,v)
     // Normal n = normalize(TBN * ln)
-
+    Eigen::Vector3f n = normal;
+    Eigen::Vector3f t = {normal.x() * normal.y() / std::sqrt(normal.x() * normal.x() + normal.z() * normal.z()),
+                         std::sqrt(normal.x() * normal.x() + normal.z() * normal.z()),
+                         normal.z() * normal.y() / std::sqrt(normal.x() * normal.x() + normal.z() * normal.z())};
+    Eigen::Vector3f b = n.cross(t);
+    Eigen::MatrixXf TBN(3, 3);
+    TBN << t, b, n;
+    auto dU = kh * kn * (((payload.texture)->getColor(payload.tex_coords[0] + 1.0 / (payload.texture)->width, payload.tex_coords[1])).norm() -
+                         ((payload.texture)->getColor(payload.tex_coords[0], payload.tex_coords[1])).norm());
+    auto dV = kh * kn * (((payload.texture)->getColor(payload.tex_coords[0] , payload.tex_coords[1] + 1.0 / (payload.texture)->height)).norm() -
+                         ((payload.texture)->getColor(payload.tex_coords[0], payload.tex_coords[1])).norm());
+    Eigen::Vector3f ln{-dU, -dV, 1};
+    point += kn * normal * payload.texture->getColor(payload.tex_coords.x() , payload.tex_coords.y()).norm();
+    normal = (TBN * ln).normalized();
 
     Eigen::Vector3f result_color = {0, 0, 0};
 
+    Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
-        // components are. Then, accumulate that result on the *result_color* object.
-
-
+        Eigen::Vector3f l = (light.position - point).normalized();      // 光
+        Eigen::Vector3f v = (eye_pos - point).normalized();		        // 眼
+        Eigen::Vector3f h = (l + v).normalized();                       // 半程向量
+        double r_2 = (light.position - point).dot(light.position - point);
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity / r_2) * std::max(0.0f, normal.dot(l));    //cwiseProduct()函数允许Matrix直接进行点对点乘法,而不用转换至Array。
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity / r_2) * std::pow(std::max(0.0f, normal.dot(h)), p);
+        result_color += (La + Ld + Ls);
     }
-
     return result_color * 255.f;
 }
 
@@ -230,11 +273,22 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     // dV = kh * kn * (h(u,v+1/h)-h(u,v))
     // Vector ln = (-dU, -dV, 1)
     // Normal n = normalize(TBN * ln)
-
-
+    Eigen::Vector3f n = normal;
+    Eigen::Vector3f t = {normal.x() * normal.y() / std::sqrt(normal.x() * normal.x() + normal.z() * normal.z()),
+                         std::sqrt(normal.x() * normal.x() + normal.z() * normal.z()),
+                         normal.z() * normal.y() / std::sqrt(normal.x() * normal.x() + normal.z() * normal.z())};
+    Eigen::Vector3f b = n.cross(t);
+    Eigen::MatrixXf TBN(3, 3);
+    TBN << t, b, n;
+    auto dU = kh * kn * (((payload.texture)->getColor(payload.tex_coords[0] + 1.0 / (payload.texture)->width, payload.tex_coords[1])).norm() -
+                         ((payload.texture)->getColor(payload.tex_coords[0], payload.tex_coords[1])).norm());
+    auto dV = kh * kn * (((payload.texture)->getColor(payload.tex_coords[0] , payload.tex_coords[1] + 1.0 / (payload.texture)->height)).norm() -
+                         ((payload.texture)->getColor(payload.tex_coords[0], payload.tex_coords[1])).norm());
+    Eigen::Vector3f ln{-dU, -dV, 1};
+    n = (TBN * ln).normalized();
     Eigen::Vector3f result_color = {0, 0, 0};
-    result_color = normal;
-
+//    result_color = normal;
+    result_color = n;
     return result_color * 255.f;
 }
 
@@ -247,10 +301,10 @@ int main(int argc, const char** argv)
 
     std::string filename = "output.png";
     objl::Loader Loader;
-    std::string obj_path = "../models/spot/";
+    std::string obj_path = "./models/spot/";
 
     // Load .obj File
-    bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    bool loadout = Loader.LoadFile("./models/spot/spot_triangulated_good.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)

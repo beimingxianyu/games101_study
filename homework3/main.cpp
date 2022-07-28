@@ -47,31 +47,37 @@ Eigen::Matrix4f get_model_matrix(float angle)
     return translate * rotation * scale;
 }
 
-Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
-                                      float zNear, float zFar)
+Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
-    // Students will implement this function
-    // Create the projection matrix for the given parameters.
-    // Then return it.
-    zNear = -zNear;
-    zFar = -zFar;
-    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity(), Mtrans = Eigen::Matrix4f::Identity(),
-            Mscale = Eigen::Matrix4f::Identity(), MP20 = Eigen::Matrix4f::Identity();
-    float ForY = eye_fov / 180 * MY_PI;
-    float t(std::abs(zNear) * std::tan(ForY / 2));
-    float r(t * aspect_ratio);
-    Mscale << 1/r, 0, 0, 0,
-            0, 1/t, 0, 0,
-            0, 0, 2/(zNear-zFar), 0,
+    float n = zNear;
+    float f = zFar;
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+    float t = -tan((eye_fov/360)*MY_PI)*(abs(n)); //top
+    float r = t/aspect_ratio;
+
+    Eigen::Matrix4f Mp;//透视矩阵
+    Mp <<
+       n, 0, 0,   0,
+            0, n, 0,   0,
+            0, 0, n+f, -n*f,
+            0, 0, 1,   0;
+    Eigen::Matrix4f Mo_tran;//平移矩阵
+    Mo_tran <<
+            1, 0, 0, 0,
+            0, 1, 0, 0,  //b=-t;
+            0, 0, 1, -(n+f)/2 ,
             0, 0, 0, 1;
-    Mtrans << 1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, -(zNear+zFar)/2,
-            0, 0, 0, 1;
-    MP20 << zNear, 0, 0, 0, 0, zNear, 0, 0, 0, 0, zNear + zFar, -1 * zNear * zFar, 0, 0, 1, 0;
-    projection = Mscale * Mtrans * MP20;
+    Eigen::Matrix4f Mo_scale;//缩放矩阵
+    Mo_scale <<
+             1/r,     0,       0,       0,
+            0,       1/t,     0,       0,
+            0,       0,       2/(n-f), 0,
+            0,       0,       0,       1;
+    projection = (Mo_scale*Mo_tran)* Mp;//投影矩阵
+    //这里一定要注意顺序，先透视再正交;正交里面先平移再缩放；否则做出来会是一条直线！
     return projection;
 }
+
 
 Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
 {

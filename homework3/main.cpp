@@ -151,16 +151,8 @@ Eigen::Vector3f texture_fragment_shader_ex(const fragment_shader_payload& payloa
     Eigen::Vector3f return_color = {0, 0, 0}, return_color2 = {0, 0, 0};
     if (payload.texture)
     {   //payload是之前返回的一个结构体，texture是payload的成员，是个类，getcolor是公有函数，接收两个float,u,v坐标
-        return_color2 = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
         return_color = payload.texture->getColorBilinear(payload.tex_coords.x(), payload.tex_coords.y());
         float diff = std::sqrt((return_color2 - return_color).dot(return_color2 - return_color));
-        if (diff > 10.0f) {
-            std::cout << "diff:" << diff << '\t' << payload.tex_coords.x() << ' ' << payload.tex_coords.y() << '\n';
-            count++;
-        }
-//        std::cout << return_color2[0] << '\t' << return_color[0] << '\n'
-//                  << return_color2[1] << '\t' << return_color[1] << '\n'
-//                  << return_color2[2] << '\t' << return_color[2] << '\n';
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();

@@ -40,10 +40,10 @@ public:
         Eigen::Vector3f return_color(Eigen::Vector3f::Zero());
         float s = u - pos_u0 - 0.5;
         float t = v - pos_v0 - 0.5;
-        Eigen::Vector3f u00 = makeColor(image_data.at<cv::Vec3b>(pos_u0, pos_v0)),
-                u01 = makeColor(image_data.at<cv::Vec3b>(pos_u0, pos_v0)),
-                u10 = makeColor(image_data.at<cv::Vec3b>(pos_u0 + 1, pos_v0)),
-                u11 = makeColor(image_data.at<cv::Vec3b>(pos_u0 + 1, pos_v0));
+        Eigen::Vector3f u00 = makeColor(image_data.at<cv::Vec3b>(pos_v0, pos_u0)),
+                u01 = makeColor(image_data.at<cv::Vec3b>(pos_v0 - 1, pos_u0)),
+                u10 = makeColor(image_data.at<cv::Vec3b>(pos_v0, pos_u0 + 1)),
+                u11 = makeColor(image_data.at<cv::Vec3b>(pos_v0 - 1, pos_u0 + 1));
         if (pos_u0 != -1 && pos_v0 != -1 && pos_u0 != width - 1 && pos_v0 != height - 1) {
             return_color += (1 - s) * u00 + (1 - t) * u00;
             return_color += (1 - s) * u01 + t * u01;
@@ -82,6 +82,5 @@ public:
         return_color += (1 - t) * u10 + t * u11;
         return return_color;
     }
-
 };
 #endif //RASTERIZER_TEXTURE_H

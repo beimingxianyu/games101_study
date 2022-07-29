@@ -145,6 +145,57 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     }
     return result_color * 255.f;
 }
+int count = 0;
+Eigen::Vector3f texture_fragment_shader_ex(const fragment_shader_payload& payload)
+{
+    Eigen::Vector3f return_color = {0, 0, 0}, return_color2 = {0, 0, 0};
+    if (payload.texture)
+    {   //payload是之前返回的一个结构体，texture是payload的成员，是个类，getcolor是公有函数，接收两个float,u,v坐标
+        return_color2 = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
+        return_color = payload.texture->getColorBilinear(payload.tex_coords.x(), payload.tex_coords.y());
+        float diff = std::sqrt((return_color2 - return_color).dot(return_color2 - return_color));
+        if (diff > 10.0f) {
+            std::cout << "diff:" << diff << '\t' << payload.tex_coords.x() << ' ' << payload.tex_coords.y() << '\n';
+            count++;
+        }
+//        std::cout << return_color2[0] << '\t' << return_color[0] << '\n'
+//                  << return_color2[1] << '\t' << return_color[1] << '\n'
+//                  << return_color2[2] << '\t' << return_color[2] << '\n';
+    }
+    Eigen::Vector3f texture_color;
+    texture_color << return_color.x(), return_color.y(), return_color.z();
+
+    Eigen::Vector3f ka = Eigen::Vector3f(0.005, 0.005, 0.005);
+    Eigen::Vector3f kd = texture_color / 255.f;
+    Eigen::Vector3f ks = Eigen::Vector3f(0.7937, 0.7937, 0.7937);
+
+    auto l1 = light{{20, 20, 20}, {500, 500, 500}};
+    auto l2 = light{{-20, 20, 0}, {500, 500, 500}};
+
+    std::vector<light> lights = {l1, l2};
+    Eigen::Vector3f amb_light_intensity{10, 10, 10};
+    Eigen::Vector3f eye_pos{0, 0, 10};
+
+    float p = 150;
+
+    Eigen::Vector3f color = texture_color;
+    Eigen::Vector3f point = payload.view_pos;
+    Eigen::Vector3f normal = payload.normal;
+
+    Eigen::Vector3f result_color = {0, 0, 0};
+    Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity);
+    for (auto& light : lights)
+    {
+        Eigen::Vector3f l = (light.position - point).normalized();      // 光
+        Eigen::Vector3f v = (eye_pos - point).normalized();		        // 眼
+        Eigen::Vector3f h = (l + v).normalized();                       // 半程向量
+        double r_2 = (light.position - point).dot(light.position - point);
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity / r_2) * std::max(0.0f, normal.dot(l));    //cwiseProduct()函数允许Matrix直接进行点对点乘法,而不用转换至Array。
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity / r_2) * std::pow(std::max(0.0f, normal.dot(h)), p);
+        result_color += (La + Ld + Ls);
+    }
+    return result_color * 255.f;
+}
 
 
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
@@ -364,6 +415,12 @@ int main(int argc, const char** argv)
         {
             std::cout << "Rasterizing using the bump shader\n";
             active_shader = displacement_fragment_shader;
+        } else if (argc == 3 && std::string(argv[2]) == "texture_ex")
+        {
+            std::cout << "Rasterizing using the texture shader\n";
+            active_shader = texture_fragment_shader_ex;
+            texture_path = "spot_texture2.png";
+            r.set_texture(Texture(obj_path + texture_path));
         }
     }
 
@@ -388,6 +445,9 @@ int main(int argc, const char** argv)
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 
         cv::imwrite(filename, image);
+        std::cout << "-------------------------------" << '\n';
+        std::cout << count << std::endl;
+        std::cout << "-------------------------------" << '\n';
 
         return 0;
     }

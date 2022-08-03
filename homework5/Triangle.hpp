@@ -11,6 +11,18 @@ bool rayTriangleIntersect(const Vector3f& v0, const Vector3f& v1, const Vector3f
     // that's specified bt v0, v1 and v2 intersects with the ray (whose
     // origin is *orig* and direction is *dir*)
     // Also don't forget to update tnear, u and v.
+    Vector3f E1(v1 - v0), E2(v2 - v0), S(orig - v0), S1(crossProduct(dir, E2)), S2(crossProduct(S, E1));
+    Vector3f tb1b2(dotProduct(S2, E2), dotProduct(S1, S), dotProduct(S2, dir));
+    tb1b2 = tb1b2 / dotProduct(S1, E1);
+    Vector3f barycentric_coordinates = (1 - tb1b2.y - tb1b2.z) * v0 + tb1b2.y * v1 + tb1b2.z * v2;
+    Vector3f diff = orig + tb1b2.x * dir - barycentric_coordinates;
+    if (std::sqrt(std::pow(diff.x, 2) + std::pow(diff.y, 2) + std::pow(diff.z, 2)) < 1e-6) {
+        u = tb1b2.y;
+        v = tb1b2.z;
+        tnear = std::sqrt(std::pow(barycentric_coordinates.x - orig.x, 2) +
+                          std::pow(barycentric_coordinates.y - orig.y, 2) +
+                          std::pow(barycentric_coordinates.z - orig.z, 2));
+    }
     return false;
 }
 

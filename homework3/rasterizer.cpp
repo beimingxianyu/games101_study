@@ -276,7 +276,6 @@ static Eigen::Vector2f interpolate(float alpha, float beta, float gamma, const E
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eigen::Vector3f, 3>& view_pos)
 {
-    // TODO: From your HW3, get the triangle rasterization code.
     auto v = t.toVector4();
     // get rasterized extent
     int top    = std::max(std::max(std::max(t.v[0].y(), (float)0), t.v[1].y()), t.v[2].y()),

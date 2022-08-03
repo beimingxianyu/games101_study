@@ -16,14 +16,11 @@ bool rayTriangleIntersect(const Vector3f& v0, const Vector3f& v1, const Vector3f
     tb1b2 = tb1b2 / dotProduct(S1, E1);
     Vector3f barycentric_coordinates = (1 - tb1b2.y - tb1b2.z) * v0 + tb1b2.y * v1 + tb1b2.z * v2;
     Vector3f diff = orig + tb1b2.x * dir - barycentric_coordinates;
-    if (std::sqrt(std::pow(diff.x, 2) + std::pow(diff.y, 2) + std::pow(diff.z, 2)) < 1e-6) {
-        u = tb1b2.y;
-        v = tb1b2.z;
-        tnear = std::sqrt(std::pow(barycentric_coordinates.x - orig.x, 2) +
-                          std::pow(barycentric_coordinates.y - orig.y, 2) +
-                          std::pow(barycentric_coordinates.z - orig.z, 2));
-    }
-    return false;
+    u = tb1b2.y;
+    v = tb1b2.z;
+    tnear = tb1b2.x;
+    // std::sqrt(std::pow(diff.x, 2) + std::pow(diff.y, 2) + std::pow(diff.z, 2)) < 1e-6
+    return tnear > 0 && u >= 0 && v >= 0 && (1.0f - u - v) >= 0;
 }
 
 class MeshTriangle : public Object

@@ -218,7 +218,7 @@ void Renderer::Render(const Scene& scene)
     // Use this variable as the eye position to start your rays.
     Vector3f eye_pos(0);
     int m = 0;
-    float scene_distance = scene.width / 2 / scale;
+    float scene_distance = scene.height / 2 / scale;
     for (int j = 0; j < scene.height; ++j)
     {
         for (int i = 0; i < scene.width; ++i)
@@ -230,9 +230,10 @@ void Renderer::Render(const Scene& scene)
             // vector that passes through it.
             // Also, don't forget to multiply both of them with the variable *scale*, and
             // x (horizontal) variable with the *imageAspectRatio*            
-            x = i - scene.width;
-            y = scene.height - j;
-            Vector3f dir = normalize(Vector3f(x, y, scene_distance)); // Don't forget to normalize this direction!
+            x = i - scene.width / 2 + 0.5;
+            y = scene.height / 2 - j + 0.5;
+            Vector3f dir = normalize(Vector3f(x, y, -scene_distance)); // Don't forget to normalize this direction!
+//            std::cout << dir.x << ' ' << dir.y << ' ' << dir.z << '\n';
             framebuffer[m++] = castRay(eye_pos, dir, scene, 0);
         }
         UpdateProgress(j / (float)scene.height);

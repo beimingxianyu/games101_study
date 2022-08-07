@@ -231,11 +231,19 @@ inline Intersection Triangle::getIntersection(Ray ray)
         return inter;
     t_tmp = dotProduct(e2, qvec) * det_inv;
 
-    // TODO find ray triangle intersection
+    // TODO find ray triangle intersectio
 
-
-
-
+    Vector3f E1(v1 - v0), E2(v2 - v0), S(ray.origin - v0), S1(crossProduct(ray.direction, E2)), S2(crossProduct(S, E1));
+    Vector3f tb1b2(dotProduct(S2, E2), dotProduct(S1, S), dotProduct(S2, ray.direction));
+    tb1b2 = tb1b2 / dotProduct(S1, E1);
+    Vector3f barycentric_coordinates = (1 - tb1b2.y - tb1b2.z) * v0 + tb1b2.y * v1 + tb1b2.z * v2;
+    Vector3f diff = ray.origin + tb1b2.x * ray.direction - barycentric_coordinates;
+    inter.happened = true;
+    inter.coords = barycentric_coordinates;
+    inter.normal = normal;
+    inter.distance = tb1b2.x;
+    inter.obj = this;
+    inter.m = m;
     return inter;
 }
 

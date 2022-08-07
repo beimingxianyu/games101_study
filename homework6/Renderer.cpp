@@ -22,6 +22,7 @@ void Renderer::Render(const Scene& scene)
     float imageAspectRatio = scene.width / (float)scene.height;
     Vector3f eye_pos(-1, 5, 10);
     int m = 0;
+    float scene_distance = scene.height / 2 / scale;
     for (uint32_t j = 0; j < scene.height; ++j) {
         for (uint32_t i = 0; i < scene.width; ++i) {
             // generate primary ray direction
@@ -33,9 +34,9 @@ void Renderer::Render(const Scene& scene)
             //  vector that passes through it.
             // Also, don't forget to multiply both of them with the variable
             // *scale*, and x (horizontal) variable with the *imageAspectRatio*
-
+            Vector3f dir = normalize(Vector3f(x, y, -scene_distance));
             // Don't forget to normalize this direction!
-
+            framebuffer[m++] = scene.castRay(Ray(eye_pos, dir, 3), 0);
         }
         UpdateProgress(j / (float)scene.height);
     }

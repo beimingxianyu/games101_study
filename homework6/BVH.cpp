@@ -310,7 +310,7 @@ std::pair<std::vector<Object*>, size_t > minCost(std::vector<Object *> objects) 
 
 
 BVHBuildNode *BVHAccel::recursiveBuildWithSAH(std::vector<Object *> objects) {
-    // TODO SAH Method
+
     BVHBuildNode* node = new BVHBuildNode();
 
     // Compute bounds of all primitives in BVH node
@@ -382,7 +382,6 @@ Intersection BVHAccel::Intersect(const Ray& ray) const
 
 Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 {
-    // TODO Traverse the BVH to find intersection
     if (!(node->bounds.IntersectP(ray, ray.direction_inv, {0, 0, 0}))) {
         return Intersection();
     }

@@ -231,7 +231,6 @@ inline Intersection Triangle::getIntersection(Ray ray)
         return inter;
     t_tmp = dotProduct(e2, qvec) * det_inv;
 
-    // TODO find ray triangle intersectio
 
 //    Vector3f E1(v1 - v0), E2(v2 - v0), S(ray.origin - v0), S1(crossProduct(ray.direction, E2)), S2(crossProduct(S, E1));
 //    Vector3f tb1b2(dotProduct(S2, E2), dotProduct(S1, S), dotProduct(S2, ray.direction));

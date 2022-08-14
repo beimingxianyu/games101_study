@@ -30,6 +30,8 @@ add_subdirectory(homework5)
 
 add_subdirectory(homework6)
 
+add_subdirectory(homework7)
+
 add_executable(test test.cpp)
 
 target_link_libraries(test Eigen3::Eigen)

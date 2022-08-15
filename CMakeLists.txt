@@ -3,9 +3,9 @@ project(games101)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(Eigen3_DIR "D:/c/Eigen3/share/eigen3/cmake")
+set(Eigen3_DIR "D:/c/gun/Eigen3/share/eigen3/cmake")
 
-set(OpenCV_DIR "D:/c/OpenCV")
+set(OpenCV_DIR "D:/c/gun/OpenCV")
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 
@@ -35,4 +35,5 @@ add_subdirectory(homework7)
 add_executable(test test.cpp)
 
 target_link_libraries(test Eigen3::Eigen)
+
 

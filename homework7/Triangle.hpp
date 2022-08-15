@@ -252,6 +252,9 @@ inline Intersection Triangle::getIntersection(Ray ray)
         return inter;
     t_tmp = dotProduct(e2, qvec) * det_inv;
 
+    if(t_tmp<0)
+        return inter;
+
     inter.distance = t_tmp;
     inter.happened = true;
     inter.m = m;

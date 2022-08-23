@@ -57,6 +57,12 @@ bool Scene::trace(
     return (*hitObject != nullptr);
 }
 
+float FresnelTerm(const Vector3f wo, const Vector3f N, float n1, float n2) {
+    float R0(std::pow((n1 - n2) / (n1 + n2), 2));
+    float cos0(dotProduct(-wo, N));
+    return R0 + (1 - R0) * std::pow(1 - cos0, 5);
+}
+
 Vector3f shade(const Intersection& inter, const Vector3f& wo, const Scene& scene) {
     float pdf_light = 1.0, RussianRoulette = 0.8;
     Vector3f L_dir(0.0, 0.0, 0.0), L_indir(0.0, 0.0, 0.0);
@@ -70,17 +76,29 @@ Vector3f shade(const Intersection& inter, const Vector3f& wo, const Scene& scene
     float dd((light_pos - p).norm());
     // 判断是否无遮挡
     if (std::abs(ll.distance - dd) < 0.005) {
-        L_dir = emit * inter.m->eval(wo, wi_light, N) * dotProduct(wi_light, N) * dotProduct(ws, NN)
+        #ifndef MicrofacetBRDF
+            const Vector3f f_r(inter.m->eval(wo, wi_light, N));
+        #else
+            // TODO Microfacet BRDF
+            float fresnel_term(FresnelTerm(wo, inter.normal, 1.0,  inter.m->ior));
+        #endif
+        L_dir = emit * f_r * dotProduct(wi_light, N) * dotProduct(ws, NN)
                 / std::pow((light_pos - p).norm(), 2) / pdf_light;
     }
 
-//    test1:
     if (get_random_float() < RussianRoulette) {
         Vector3f wi = inter.m->sample(wo, inter.normal).normalized();
         Ray p_to_q(p, wi);
         Intersection inter_p_to_q(scene.intersect(p_to_q));
         if (inter_p_to_q.happened && !(inter_p_to_q.m->hasEmission())) {
-            L_indir = scene.castRay(p_to_q, 0) * inter.m->eval(wo, wi, N) *
+            #ifndef MicrofacetBRDF
+                const Vector3f f_r(inter.m->eval(wo, wi, N));
+            #else
+                // TODO Microfacet BRDF
+            float fresnel_term(FresnelTerm(wo, inter.normal, 1.0,  inter.m->ior));
+            
+            #endif
+            L_indir = scene.castRay(p_to_q, 0) * f_r *
                       dotProduct(wi, inter.normal) / inter.m->pdf(wo, wi, inter.normal) /
                       RussianRoulette;
         }
@@ -91,7 +109,6 @@ Vector3f shade(const Intersection& inter, const Vector3f& wo, const Scene& scene
 // Implementation of Path Tracing
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
-    // TODO Implement Path Tracing Algorithm here
     Intersection inter = intersect(ray);
     if (inter.happened) {
         if (inter.m->hasEmission()) {

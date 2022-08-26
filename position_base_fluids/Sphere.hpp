@@ -18,6 +18,8 @@ public:
     Sphere(const Vector3f &c, const float &r, Material* mt = new Material()) : center(c), radius(r), radius2(r * r), m(mt), bound(this)  // area(4 * M_PI *r *r)
     {}
 
+    Sphere() = default;
+
     Object_Type getType() const override {
         return Sphere_type;
     }

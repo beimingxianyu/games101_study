@@ -6,3 +6,4 @@ out
 test
 test2.cpp
 .vs
+CMakeSettings.json

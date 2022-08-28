@@ -17,7 +17,8 @@ Scene::Scene(const int &width, const int &height, const Shader &shader) :
              g_buffer_(std::vector<Material>(width_ * height_, Material(DIFFUSE, Eigen::Vector3f(255.0f, 255.0f, 255.0f)))),
              frame_buffer_(std::vector<Eigen::Vector3f>(width_ * height_, Eigen::Vector3f(255.0f, 255.0f, 255.0f))),
              z_buffer_(std::vector<float>(width_ * height_, std::numeric_limits<float>::max() * -1.0f)),
-             rasterizer_(Rasterizer(width_, height_, objects_, transparent_flag_, g_buffer_, z_buffer_)) {}
+             rasterizer_(Rasterizer(width_, height_, objects_, transparent_flag_, g_buffer_, z_buffer_)), 
+             position_base_(objects_, transparent_flag_, Bound3D(200.0f, -200.0f, 400.0f, -400.0f, 200.0f, -200.0f)) {}
 
 void Scene::clean(Clean buffer) {
     if ((buffer & Clean::frame_buffer) == Clean::frame_buffer) {
@@ -40,6 +41,7 @@ void Scene::draw() {
     rasterizer_.draw();
     shader_.draw(g_buffer_, frame_buffer_);
     // TODO 怎加PBF方法
+    
 }
 
 std::vector<Vector3f> & Scene::getFrameBuffer() {

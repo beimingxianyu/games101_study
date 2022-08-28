@@ -49,8 +49,8 @@ public:
                 bottom_(std::numeric_limits<float>::max()), top_(std::numeric_limits<float>::max() * -1.0f),
                 near_(std::numeric_limits<float>::max()), far_(std::numeric_limits<float>::max() * -1.0f) {}
 
-    Bound3D(const float & top, const float & bottom, const float & left,
-            const float & right, const float & near, const float & far) :
+    Bound3D(const float & top, const float & bottom, const float & right,
+            const float & left, const float & near, const float & far) :
             top_(top), bottom_(bottom), left_(left), right_(right), near_(near), far_(far) {}
 
     float left_, right_, bottom_, top_, near_, far_;

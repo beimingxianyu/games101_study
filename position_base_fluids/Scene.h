@@ -48,7 +48,7 @@ private:
     std::vector<Material> g_buffer_;
     std::vector<float> z_buffer_;
     std::vector<Vector3f> frame_buffer_;
-
+    PositionBase position_base_;
 };
 
 

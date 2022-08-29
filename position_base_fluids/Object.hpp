@@ -39,7 +39,7 @@ class Bound {
 public:
     Bound() : left_(std::numeric_limits<float>::max()), right_(std::numeric_limits<float>::max() * -1.0f),
               bottom_(std::numeric_limits<float>::max()), top_(std::numeric_limits<float>::max() * -1.0f){}
-    Bound(Object* obj) {obj->calculateBound();}
+    Bound(Object* obj) {*this = obj->calculateBound();}
     float left_, right_, bottom_, top_;
 };
 

@@ -40,8 +40,7 @@ std::vector<Object*>& Scene::getObjects() {
 void Scene::draw() {
     rasterizer_.draw();
     shader_.draw(g_buffer_, frame_buffer_);
-    // TODO 怎加PBF方法
-    
+    position_base_.update();
 }
 
 std::vector<Vector3f> & Scene::getFrameBuffer() {

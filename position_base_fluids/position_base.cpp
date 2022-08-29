@@ -142,6 +142,15 @@ Eigen::Vector3f PositionBase::deltaPotion(const std::size_t& i) {
 	return result;
 }
 
+Eigen::Vector3f PositionBase::deltaPotion(const std::size_t& i, const std::vector<float>& ramta_s) {
+	Eigen::Vector3f result(Eigen::Vector3f::Zero());
+	for (const auto& index : proximity_poind_[i - transparent_flag_]) {
+		result += (ramta_s[i - transparent_flag_] + ramta_s[index - transparent_flag_] + S_corr(i, index)) * derivativeOfWPoly6(i, index);
+	}
+	result /= density_0_;
+	return result;
+}
+
 Eigen::Vector3f PositionBase::deltavelocity(const std::size_t& i) {
 	float c(0.01);
 	Eigen::Vector3f result(Eigen::Vector3f::Zero());
@@ -179,8 +188,6 @@ void PositionBase::impactCheckingAndUpdate(const std::size_t& i, const Eigen::Ve
 
 }
 
-
-
 void PositionBase::update() {
 	// 保存旧位置
 	std::vector<Eigen::Vector3f> temps(objects_.size() - transparent_flag_);
@@ -200,7 +207,7 @@ void PositionBase::update() {
 			ramta_s[index - transparent_flag_] = Ramta(index);
 		}
 		for (std::size_t index(transparent_flag_); index != objects_.size(); ++index) {
-			impactCheckingAndUpdate(index, deltaPotion(index));
+			impactCheckingAndUpdate(index, deltaPotion(index, ramta_s));
 		}
 	}
 	// 计算涡流的影响
@@ -209,6 +216,3 @@ void PositionBase::update() {
 		velocitys_[index - transparent_flag_] += deltavelocity(index);
 	}
 }
-
-
-

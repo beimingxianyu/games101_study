@@ -53,10 +53,12 @@ private:
 	float Ramta(const std::size_t& i);
 	// 位置更新向量
 	Eigen::Vector3f deltaPotion(const std::size_t& i);
+	Eigen::Vector3f deltaPotion(const std::size_t& i, const std::vector<float>& ramta_s);
 	// 速度更新向量
 	Eigen::Vector3f deltavelocity(const std::size_t& i);
 	// 碰撞检测与处理
 	void impactCheckingAndUpdate(const std::size_t& i, const Eigen::Vector3f& delta_potion);
+
 
 
 

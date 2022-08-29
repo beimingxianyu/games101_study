@@ -59,10 +59,6 @@ private:
 	// 碰撞检测与处理
 	void impactCheckingAndUpdate(const std::size_t& i, const Eigen::Vector3f& delta_potion);
 
-
-
-
-
 private:
 	float density_0_;                                         // 水的密度
 	float m0_;                                                // 模拟水的小球的质量

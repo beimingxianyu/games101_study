@@ -12,9 +12,9 @@
 using namespace Eigen;
 
 enum Object_Type{
-    Triangle_type,
-    Sphere_type,
-    Mesh_triangle_type
+    Triangle_type = 0X01,
+    Sphere_type = 0X02,
+    Mesh_triangle_type = 0X04
 };
 
 class Bound;

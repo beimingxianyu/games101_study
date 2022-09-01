@@ -7,6 +7,7 @@
 #include "Triangle.hpp"
 #include "Sphere.hpp"
 #include "Scene.h"
+#include "global.hpp"
 
 
 
